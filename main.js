@@ -1,6 +1,5 @@
 const $arenas = document.querySelector('.arenas');
 
-
 const player1 = {
     id: 1,
     name: 'Player 1',
@@ -8,8 +7,11 @@ const player1 = {
     img: './assets/players/subzero.gif',
     weapon: ['katana'],
     attack: function () {
-        console.log(this.name + 'Fight...');
-    }
+        console.log(this.name + ' Fight...');
+    },
+    changeHP,
+    getHPElement,
+    renderHP,
 };
 
 const player2 = {
@@ -19,8 +21,11 @@ const player2 = {
     img: './assets/players/scorpion.gif',
     weapon: ['sword'],
     attack: function () {
-        console.log(this.name + 'Fight...');
-    }
+        console.log(this.name + ' Fight...');
+    },
+    changeHP,
+    getHPElement,
+    renderHP,
 }
 initGame($arenas);
 
@@ -32,16 +37,27 @@ function initGame(arena) {
 
     const $gameButton = document.querySelector('.button');
 
-    $gameButton.addEventListener('click', () => {
-        changeHP(player1);
-        changeHP(player2);
-
-        const $fightTitle = getFightTitle(player1, player2);
-        if ($fightTitle) {
-            $gameButton.disabled = true;
-            arena.appendChild($fightTitle);
-        }
+    $gameButton.addEventListener('click', function () {
+        handleGameRound(this, arena, player1, player2)
     });
+}
+
+function handleGameRound(button, arena, player1, player2) {
+    player1.changeHP(getDamage());
+    player2.changeHP(getDamage());
+
+    player1.renderHP();
+    player2.renderHP();
+
+    const $fightTitle = getFightTitle(player1, player2);
+    if ($fightTitle) {
+        button.disabled = true;
+        arena.appendChild($fightTitle);
+
+        const $reloadButton = createReloadButton();
+        const $controls = document.querySelector('.control');
+        $controls.appendChild($reloadButton);
+    }
 }
 
 function createPlayer(player){
@@ -79,7 +95,6 @@ function createElement(tagName, className) {
     return $element;
 }
 
-
 function getDamage() {
     return Math.ceil(Math.random() * 20) + 5;
 }
@@ -103,13 +118,30 @@ function getFightTitle(player1, player2) {
     return $fightTitle;
 }
 
-function changeHP(player){
-    player.hp -= getDamage();
+function changeHP(damage){
+    this.hp -= damage;
 
-    if (player.hp <= 0) {
-        player.hp = 0;
+    if (this.hp <= 0) {
+        this.hp = 0;
     }
+}
 
-    const $lifeBar = document.querySelector(`.player${player.id} .progressbar .life`);
-    $lifeBar.style.width = `${player.hp}%`;
+function getHPElement(){
+    return document.querySelector(`.player${this.id} .progressbar .life`);
+}
+
+function renderHP(){
+    const $lifeBar = this.getHPElement();
+    $lifeBar.style.width = `${this.hp}%`;
+}
+
+function createReloadButton() {
+    const $reloadButton = createElement('button', 'button');
+    $reloadButton.textContent = 'Restart';
+    $reloadButton.addEventListener('click', () => window.location.reload());
+
+    const $reloadButtonWrapper = createElement('div', 'reloadWrap');
+    $reloadButtonWrapper.appendChild($reloadButton);
+
+    return $reloadButtonWrapper;
 }
